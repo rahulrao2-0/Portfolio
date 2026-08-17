@@ -50,13 +50,17 @@ const Home = () => {
           </div>
         </div>
 
-        {/* The portrait is masked and graded rather than framed, so its edges
-            dissolve into the star field instead of sitting in a hard box. */}
-        <div className="home-portrait" aria-hidden="false">
-          <span className="portrait-glow" />
-          <span className="portrait-ring" />
-          <img src="/rahul_photo.jpeg" alt="Rahul Yadav" width="720" height="900" />
-          <span className="portrait-veil" />
+        {/* No frame, no ring, no box: the photo's background is already removed,
+            so the figure's own silhouette is the edge. Pages.css crops the empty
+            part of the frame, grades the photo into the page's cool light and
+            dissolves the bottom, where the torso runs out of the photo. */}
+        <div className="home-portrait">
+          <img
+            src="/rahul_photo-removebg-preview.png"
+            alt="Rahul Yadav"
+            width="375"
+            height="666"
+          />
         </div>
       </div>
     </div>
