@@ -1,0 +1,151 @@
+.navigation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--nav-h);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 var(--pad-x);
+  z-index: 100;
+  background: linear-gradient(180deg, rgba(4, 6, 14, 0.78), rgba(4, 6, 14, 0.18));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav-brand {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(120deg, var(--ink), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: filter 0.3s ease;
+}
+
+.nav-brand:hover {
+  filter: brightness(1.25);
+}
+
+.nav-brand span {
+  color: var(--accent-2);
+  -webkit-text-fill-color: var(--accent-2);
+}
+
+/* Pill group */
+.nav-links {
+  display: flex;
+  gap: 0.15rem;
+  padding: 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.nav-links a {
+  position: relative;
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: var(--ink-soft);
+  transition: color 0.3s ease, background 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--ink);
+  background: var(--surface-hi);
+}
+
+.nav-links a.active {
+  color: #06070d;
+  background: linear-gradient(120deg, var(--ink), #cdd4ea);
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.nav-socials {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.nav-socials a {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--ink-soft);
+  background: var(--surface);
+  overflow: hidden;
+  transition: color 0.3s ease, border-color 0.3s ease, transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Accent fill that grows from the bottom on hover. */
+.nav-socials a::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(150deg, var(--accent), var(--accent-2));
+  transform: translateY(101%);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-socials a svg {
+  position: relative;
+  z-index: 1;
+}
+
+.nav-socials a:hover {
+  color: #06070d;
+  border-color: transparent;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(124, 140, 255, 0.35);
+}
+
+.nav-socials a:hover::before {
+  transform: translateY(0);
+}
+
+@media (max-width: 1100px) {
+  .nav-links a {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 900px) {
+  /* The section dots plus the scroll/swipe gesture cover navigation here, so
+     the link pills can drop out without stranding the user. */
+  .nav-links {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .nav-socials a {
+    width: 33px;
+    height: 33px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-socials a,
+  .nav-socials a::before {
+    transition: none;
+  }
+
+  .nav-socials a:hover {
+    transform: none;
+  }
+}

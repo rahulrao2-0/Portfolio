@@ -1,0 +1,74 @@
+/* The native cursor is only hidden once the custom one has actually mounted —
+   the class is added by Cursor.jsx, so a coarse pointer or a failed mount always
+   keeps the system cursor. */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  /* Never intercept anything: the wheel/touch page gestures and every link
+     underneath must keep receiving events. */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, width 0.28s ease, height 0.28s ease,
+    background 0.28s ease, border-color 0.28s ease;
+  will-change: transform;
+}
+
+/* Nothing renders until Cursor.jsx has seen a real pointer position. */
+html.cursor-visible .cursor-dot,
+html.cursor-visible .cursor-ring {
+  opacity: 1;
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.65);
+}
+
+.cursor-ring {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  background: rgba(124, 140, 255, 0.05);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+}
+
+/* Over a link, button or field the ring swells and picks up the accent. */
+html.cursor-hover .cursor-ring {
+  width: 60px;
+  height: 60px;
+  border-color: var(--accent);
+  background: rgba(124, 140, 255, 0.14);
+  box-shadow: 0 0 32px rgba(124, 140, 255, 0.35);
+}
+
+html.cursor-hover .cursor-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--accent-2);
+}
+
+html.cursor-down .cursor-ring {
+  width: 26px;
+  height: 26px;
+  background: rgba(124, 140, 255, 0.28);
+}
+
+@media (pointer: coarse) {
+  .cursor-dot,
+  .cursor-ring {
+    display: none;
+  }
+}

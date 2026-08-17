@@ -1,0 +1,267 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --ink: #f4f6fb;
+  --ink-soft: #b9c0d4;
+  --ink-mute: #7d859b;
+
+  --accent: #7c8cff;
+  --accent-2: #4fd8e8;
+  --accent-glow: rgba(124, 140, 255, 0.35);
+
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.22);
+
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hi: rgba(255, 255, 255, 0.07);
+
+  --radius: 16px;
+  --radius-lg: 22px;
+
+  /* Pages run the full viewport width; the cap only stops lines from becoming
+     unreadably long on ultrawide displays. */
+  --shell: min(100%, 1680px);
+  /* Shared by the nav bar and the page padding so their content edges line up. */
+  --pad-x: clamp(1.25rem, 4vw, 4.5rem);
+  --nav-h: 78px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--ink);
+  background-color: #000;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent);
+  color: #06070d;
+}
+
+/* App container: a fixed-height stage. The panels inside it slide, so the
+   document itself must never scroll. */
+.app-container {
+  position: relative;
+  z-index: 10;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Page transitions styling */
+
+/* Holds the outgoing and incoming panels at the same time.
+   No overflow:hidden here — clipping the stage would cut the top off the
+   receding page, which makes the transition read as a plain scroll instead of
+   a page dropping into the background. The panels are viewport-sized and the
+   .app-container above already clips, so nothing escapes.
+   No `perspective` here: the tween sets transformPerspective on the panel itself,
+   and a parent perspective on top of that would double the foreshortening. */
+.transition-group {
+  position: absolute;
+  inset: 0;
+}
+
+.page-container {
+  position: absolute;
+  inset: 0;
+  padding: calc(var(--nav-h) + 2.25rem) var(--pad-x) 4.5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform, opacity, clip-path, filter;
+  backface-visibility: hidden;
+
+  /* A scrim, not a solid fill: it lifts text off the star field and — crucially
+     — gives the page a visible surface, so when it scales down during a
+     transition you see an actual page receding rather than floating text.
+     Kept light enough that the galaxy still shows through. */
+  background:
+    radial-gradient(115% 70% at 78% 8%, rgba(124, 140, 255, 0.12), transparent 62%),
+    radial-gradient(90% 60% at 8% 92%, rgba(79, 216, 232, 0.07), transparent 60%),
+    linear-gradient(180deg, rgba(2, 4, 10, 0.3) 0%, rgba(2, 4, 10, 0.62) 100%);
+}
+
+.page-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.page-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.page-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 100px;
+}
+
+.page-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* Section indicator */
+.page-dots {
+  position: fixed;
+  top: 50%;
+  right: 1.5rem;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  z-index: 90;
+}
+
+.page-dot {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 100px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.35s ease, border-color 0.35s ease, height 0.35s ease,
+    box-shadow 0.35s ease, transform 0.35s ease;
+}
+
+.page-dot:hover {
+  border-color: var(--ink);
+  transform: scale(1.25);
+}
+
+.page-dot.active {
+  height: 28px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.page-dot-label {
+  position: absolute;
+  right: calc(100% + 0.85rem);
+  top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  background: rgba(6, 8, 16, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.page-dot:hover .page-dot-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Scroll affordance */
+.scroll-hint {
+  position: fixed;
+  bottom: 1.4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 90;
+  opacity: 0.5;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+
+.scroll-hint.hidden {
+  opacity: 0;
+}
+
+.scroll-hint-text {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.scroll-hint-track {
+  position: relative;
+  width: 20px;
+  height: 32px;
+  border: 1px solid var(--line-strong);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.scroll-hint-dot {
+  position: absolute;
+  left: 50%;
+  top: 7px;
+  width: 3px;
+  height: 6px;
+  margin-left: -1.5px;
+  border-radius: 100px;
+  background: var(--ink);
+  animation: scroll-hint-drop 1.7s ease-in-out infinite;
+}
+
+@keyframes scroll-hint-drop {
+  0% { transform: translateY(0); opacity: 0; }
+  25% { opacity: 1; }
+  75% { transform: translateY(12px); opacity: 1; }
+  100% { transform: translateY(14px); opacity: 0; }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (max-width: 900px) {
+  .page-container {
+    padding: calc(var(--nav-h) + 1.25rem) var(--pad-x) 5.5rem;
+  }
+
+  .page-dots {
+    right: 0.7rem;
+  }
+
+  .page-dot-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint-dot {
+    animation: none;
+  }
+
+  .page-dot,
+  .page-dot-label {
+    transition: none;
+  }
+}
