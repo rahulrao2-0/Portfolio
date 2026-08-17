@@ -252,57 +252,75 @@
    That file is the full 375x666 studio frame, and the figure only occupies
    (72,250)-(333,665) of it — measured from the file's alpha channel. Everything
    below crops to that box in CSS rather than by re-exporting the image, so the
-   pasted file stays byte-for-byte the source of truth. Container aspect is the
-   crop box 278x424 (8px of padding around the figure); the image is laid over it
-   at 375/278 = 134.89% width, pulled left by 64/278 = 23.02% and pinned to the
-   bottom, which puts source (64,242) exactly on the container's top-left. */
+   pasted file stays byte-for-byte the source of truth.
+
+   The crop box is 269x362 at (68,238): ~12px of clearance above the hair, tight
+   at the sides, and the bottom cut 66px short of the photo so the torso ends
+   inside the fade instead of at the photo's own edge. A tighter box is what zooms
+   the figure — the container only scales whatever the box contains.
+
+   Sizing is driven by HEIGHT, not width: the image is laid over the container at
+   a percentage of container *width*, so a container whose height gets capped
+   independently would crop further down the frame and slice the top of the head
+   off. Giving height and deriving width from aspect-ratio keeps the crop exact at
+   every viewport size.
+
+   The three percentages below all fall out of that crop box, so they move
+   together if it ever changes:
+     img width  = 375/269 = 139.41%   (source frame over crop width)
+     img left   = -68/269 = -25.28%   (crop x offset)
+     img bottom = -66/362 = -18.23%   (source height left below the crop) */
 .home-portrait {
   position: relative;
   justify-self: end;
   align-self: end;
-  width: 100%;
-  max-width: 22rem;
-  aspect-ratio: 278 / 424;
-  /* Kept near the figure's native 416px so it is never upscaled into mush. */
-  max-height: min(62vh, 29rem);
-  /* Hides the empty part of the source frame. Nothing visible is cut: the crop
-     lines sit 8px outside the figure, in fully transparent pixels. */
+  /* Pulled well in from the panel's right edge so the figure sits inside the
+     layout rather than against its margin. */
+  margin-right: clamp(1.5rem, 7vw, 8rem);
+  /* 68vh keeps it inside a short viewport: any taller and the panel starts
+     scrolling before the wheel gesture is allowed to change pages. */
+  height: min(68vh, 34rem);
+  aspect-ratio: 269 / 362;
+  width: auto;
+  /* Hides the empty part of the source frame. Nothing visible is cut at the top
+     or sides: those crop lines sit in fully transparent pixels. */
   overflow: hidden;
-  /* The figure runs off the bottom of the photo. Fading it there is what stops
-     that straight line from reading as an edge against the page. */
-  -webkit-mask-image: linear-gradient(180deg, #000 62%, rgba(0, 0, 0, 0.4) 85%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 62%, rgba(0, 0, 0, 0.4) 85%, transparent 100%);
+  /* The bottom crop is a straight line across the torso. Fading it there is what
+     stops it reading as an edge against the page. */
+  -webkit-mask-image: linear-gradient(180deg, #000 66%, rgba(0, 0, 0, 0.48) 85%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 66%, rgba(0, 0, 0, 0.48) 85%, transparent 100%);
   animation: portrait-float 9s ease-in-out infinite;
 }
 
 .home-portrait img {
   position: absolute;
-  left: -23.02%;
-  bottom: 0;
-  width: 134.89%;
+  left: -25.28%;
+  bottom: -18.23%;
+  width: 139.41%;
   height: auto;
-  /* Drains the warm studio cast. Left alone the photo glows orange against a
-     near-black blue page and reads as a sticker pasted on top of it. */
-  filter: saturate(0.4) brightness(0.9) contrast(1.08);
+  /* Cools the warm studio cast down towards the page's light without draining
+     the face — pushed further than this and the features go flat and grey. */
+  filter: saturate(0.68) brightness(0.97) contrast(1.04);
   transition: filter 0.6s ease;
 }
 
 /* The cool grade, clipped to the figure by the photo's own alpha. A plain
    rectangle here would paint straight back the boxy edge the cut-out removes.
    Positioned with the same numbers as the image above, so the two register
-   exactly and mask-size can stay at 100% 100%. */
+   exactly and mask-size can stay at 100% 100%. Weighted towards the lower body:
+   at full strength over the face it greys the features out. */
 .home-portrait::after {
   content: '';
   position: absolute;
-  left: -23.02%;
-  bottom: 0;
-  width: 134.89%;
+  left: -25.28%;
+  bottom: -18.23%;
+  width: 139.41%;
   aspect-ratio: 375 / 666;
   background: linear-gradient(
     195deg,
-    rgba(124, 140, 255, 0.55) 0%,
-    rgba(79, 216, 232, 0.3) 52%,
-    rgba(160, 92, 255, 0.4) 100%
+    rgba(124, 140, 255, 0.16) 0%,
+    rgba(124, 140, 255, 0.34) 46%,
+    rgba(160, 92, 255, 0.42) 100%
   );
   mix-blend-mode: soft-light;
   -webkit-mask-image: url('/rahul_photo-removebg-preview.png');
@@ -317,7 +335,7 @@
 /* Hover brings the real colour back. Only the grade changes — nothing moves, so
    the tint above can never drift out of register with the photo. */
 .home-portrait:hover img {
-  filter: saturate(0.9) brightness(1.02) contrast(1.03);
+  filter: saturate(1) brightness(1.04) contrast(1.02);
 }
 
 @keyframes portrait-float {
@@ -878,10 +896,9 @@
   .home-portrait {
     order: -1;
     justify-self: center;
-    /* Stacked above the copy, so it shrinks to a portrait bust. The aspect ratio
-       is kept — squashing it to a square would crop the figure. */
-    max-width: 15rem;
-    max-height: 40vh;
+    /* Height-driven for the same reason as the desktop rule: the crop maths is
+       anchored to the container's height. */
+    height: min(38vh, 15rem);
   }
 
   .home-page {
